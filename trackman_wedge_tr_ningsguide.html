@@ -1,0 +1,1416 @@
+<!DOCTYPE html>
+<html lang="sv" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Trackman Wedge & Träningsguide (HCP 28 → 18)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      height: 24px;
+      width: 24px;
+      border-radius: 50%;
+      background: #059669;
+      cursor: pointer;
+      border: 3px solid #ffffff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.18);
+      -webkit-appearance: none;
+    }
+    .touch-manipulation {
+      touch-action: manipulation;
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-full flex flex-col antialiased selection:bg-emerald-100 selection:text-emerald-900 pb-20">
+
+  <!-- Top App Header -->
+  <header class="bg-white border-b border-slate-200/80 sticky top-0 z-30 shadow-xs">
+    <div class="max-w-md mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center space-x-2.5">
+        <div class="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold text-base shadow-sm">
+          ⛳
+        </div>
+        <div>
+          <h1 class="text-base font-bold text-slate-900 leading-tight">Trackman Träning</h1>
+          <p class="text-xs font-medium text-emerald-700 flex items-center gap-1">
+            <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            Mål: HCP 28 &rarr; 18
+          </p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-[11px] font-semibold tracking-wide uppercase px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+          2h / vecka
+        </span>
+      </div>
+    </div>
+
+    <!-- Navigation Pills -->
+    <div class="max-w-md mx-auto px-3 pb-2.5">
+      <nav class="flex p-1 bg-slate-100 rounded-xl gap-1 border border-slate-200" aria-label="Tabs">
+        <button id="tabBtnMatrix" onclick="switchTab('matrix')" class="flex-1 py-2 px-2 text-xs font-semibold rounded-lg transition-all duration-150 bg-white text-emerald-800 shadow-sm border border-slate-200/60 flex items-center justify-center gap-1.5">
+          <span>🎯</span> Matris
+        </button>
+        <button id="tabBtnTimer" onclick="switchTab('timer')" class="flex-1 py-2 px-2 text-xs font-semibold rounded-lg transition-all duration-150 text-slate-600 hover:text-slate-900 flex items-center justify-center gap-1.5">
+          <span>⏱️</span> 120m Pass
+        </button>
+        <button id="tabBtnGuide" onclick="switchTab('guide')" class="flex-1 py-2 px-2 text-xs font-semibold rounded-lg transition-all duration-150 text-slate-600 hover:text-slate-900 flex items-center justify-center gap-1.5">
+          <span>📊</span> Data & Tips
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="max-w-md mx-auto px-4 pt-4 flex-1 w-full">
+
+    <!-- TAB 1: WEDGE MATRIS & KALIBRERING -->
+    <section id="tabMatrix" class="space-y-4">
+      
+      <!-- Target Finder / Slagväljare Card -->
+      <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm">
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-1.5">
+            <span class="text-sm">🎯</span>
+            <h2 class="text-xs font-bold uppercase tracking-wider text-slate-500">Slagväljare</h2>
+          </div>
+          <span class="text-[11px] text-slate-600 font-medium">Bästa träff i matris</span>
+        </div>
+
+        <div class="flex items-baseline justify-between mb-1">
+          <span class="text-xs text-slate-600 font-medium">Önskat Carry-avstånd:</span>
+          <span class="text-2xl font-black text-emerald-700 tracking-tight" id="targetDistDisplay">65 m</span>
+        </div>
+
+        <input 
+          type="range" 
+          id="targetDistSlider" 
+          min="15" 
+          max="115" 
+          value="65" 
+          step="1"
+          class="w-full h-2.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-600 touch-manipulation my-2"
+          oninput="onTargetSliderChange(this.value)"
+        >
+
+        <!-- Recommended Swing Card -->
+        <div id="recommendationBox" class="mt-3 p-3 bg-emerald-50/70 border border-emerald-200/90 rounded-xl flex items-center justify-between">
+          <div>
+            <div class="text-[11px] font-semibold uppercase text-emerald-800 tracking-wider">Rekommenderat val</div>
+            <div class="text-base font-bold text-slate-900 mt-0.5" id="recClubName">Sand Wedge (56°)</div>
+            <div class="text-xs text-slate-600 font-medium mt-0.5" id="recClockSwing">Kl 10:00 (3/4 baksving)</div>
+          </div>
+          <div class="text-right pl-3 border-l border-emerald-200">
+            <div class="text-[10px] uppercase font-semibold text-slate-500">Förväntad</div>
+            <div class="text-lg font-extrabold text-emerald-700" id="recCarryMeters">65 m</div>
+            <div class="text-[10px] font-medium text-slate-500" id="recDiffMeters">±0 m</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Matrix Table Card -->
+      <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-3">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-sm font-bold text-slate-900">Din Wedge-Matris (Carry m)</h2>
+            <p class="text-[11px] text-slate-600 mt-0.5">Klicka på en ruta för att justera mått</p>
+          </div>
+          <button 
+            onclick="openResetConfirm()" 
+            class="text-[11px] font-medium text-slate-600 hover:text-rose-700 px-2 py-1 rounded hover:bg-rose-50 transition border border-slate-200"
+          >
+            Återställ
+          </button>
+        </div>
+
+        <!-- Matrix Table -->
+        <div class="overflow-hidden rounded-xl border border-slate-200 bg-white">
+          <table class="w-full text-center border-collapse">
+            <thead>
+              <tr class="bg-slate-100/90 text-[11px] font-bold text-slate-700 border-b border-slate-200">
+                <th class="py-2.5 px-2 text-left pl-3">Sving</th>
+                <th class="py-2.5 px-1 font-bold text-slate-800">PW<br><span class="text-[9px] text-slate-600 font-normal">45° set</span></th>
+                <th class="py-2.5 px-1 font-bold text-emerald-800">50°<br><span class="text-[9px] text-emerald-700 font-normal">Gap</span></th>
+                <th class="py-2.5 px-1 font-bold text-emerald-800">56°<br><span class="text-[9px] text-emerald-700 font-normal">Sand</span></th>
+                <th class="py-2.5 px-1 font-bold text-emerald-800">60°<br><span class="text-[9px] text-emerald-700 font-normal">Lob</span></th>
+              </tr>
+            </thead>
+            <tbody id="matrixGridBody" class="divide-y divide-slate-100 text-xs">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+
+        <div class="flex items-center justify-between pt-1 text-[11px] text-slate-600">
+          <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Autolagras i mobilen</span>
+          <span>Endast Carry-meter</span>
+        </div>
+      </div>
+
+      <!-- Quick Tips Card for Wedges -->
+      <div class="bg-emerald-50/60 rounded-2xl p-4 border border-emerald-200 text-xs space-y-2">
+        <h3 class="font-bold text-emerald-900 flex items-center gap-1.5">
+          <span>💡</span> Nycklar för 28 &rarr; 18 HCP med wedgar
+        </h3>
+        <ul class="space-y-1.5 text-slate-700 leading-relaxed">
+          <li class="flex items-start gap-1.5">
+            <span class="text-emerald-700 font-bold">•</span>
+            <span><strong>50° och 56° är dina basvapen:</strong> Använd 60° främst när du måste över en bunker med kort gräs fram till hål.</span>
+          </li>
+          <li class="flex items-start gap-1.5">
+            <span class="text-emerald-700 font-bold">•</span>
+            <span><strong>Samma tempo överallt:</strong> Fart och längd avgörs enbart av armens klockposition, inte av att "ta i".</span>
+          </li>
+          <li class="flex items-start gap-1.5">
+            <span class="text-emerald-700 font-bold">•</span>
+            <span><strong>Trackman Attack Angle:</strong> Sikta på -3.5° till -4.5° (träffa bollen innan mattan).</span>
+          </li>
+        </ul>
+      </div>
+
+    </section>
+
+    <!-- TAB 2: 120-MINUTERS TRÄNINGSPASS (5-STEGS GUIDE) -->
+    <section id="tabTimer" class="space-y-4 hidden">
+      
+      <!-- Step Navigation Indicators -->
+      <div class="bg-white rounded-2xl p-3 border border-slate-200 shadow-sm">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500" id="stepProgressIndicator">Steg 1 av 5</span>
+          <span class="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200" id="stepBadge">00–15 min (15 min)</span>
+        </div>
+        
+        <div class="grid grid-cols-5 gap-1.5">
+          <button id="stepTab0" onclick="goToStep(0)" class="py-1.5 px-1 rounded-lg text-xs font-bold text-center border transition bg-emerald-600 text-white border-emerald-600 shadow-xs">1. Värm</button>
+          <button id="stepTab1" onclick="goToStep(1)" class="py-1.5 px-1 rounded-lg text-xs font-bold text-center border transition bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100">2. Wedge</button>
+          <button id="stepTab2" onclick="goToStep(2)" class="py-1.5 px-1 rounded-lg text-xs font-bold text-center border transition bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100">3. Driver</button>
+          <button id="stepTab3" onclick="goToStep(3)" class="py-1.5 px-1 rounded-lg text-xs font-bold text-center border transition bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100">4. Paus</button>
+          <button id="stepTab4" onclick="goToStep(4)" class="py-1.5 px-1 rounded-lg text-xs font-bold text-center border transition bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100">5. 9 Hål</button>
+        </div>
+      </div>
+
+      <!-- Main Step Container & Active Form Card -->
+      <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-4">
+        
+        <!-- Step Header with Mini Timer -->
+        <div class="flex items-start justify-between gap-2 border-b border-slate-100 pb-3">
+          <div>
+            <h3 id="stepHeaderTitle" class="text-base font-bold text-slate-900 leading-tight">1. Uppvärmning & Bollträff</h3>
+            <p id="stepHeaderDesc" class="text-xs text-slate-600 mt-0.5">PW / Järn 8. 50-70% tempo, hitta mitt i bladet.</p>
+          </div>
+          <div class="text-right shrink-0">
+            <span id="stepTimerDigits" class="text-xl font-black font-mono text-emerald-800 tracking-tight block">15:00</span>
+            <button id="stepPlayPauseBtn" onclick="toggleStepTimer()" class="mt-1 px-2.5 py-1 text-[11px] font-bold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition flex items-center gap-1 mx-auto">
+              <span id="stepPlayIcon">▶</span>
+              <span id="stepPlayText">Starta</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- STEP 0 FORM: Uppvärmning -->
+        <div id="formStep0" class="space-y-3 text-xs">
+          <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+            <label class="block font-bold text-slate-800 mb-1">Trackman Smash Factor (Järn)</label>
+            <div class="flex items-center gap-2">
+              <input type="number" id="s1_smash" step="0.01" placeholder="t.ex. 1.35" class="w-28 p-2 rounded-lg border border-slate-300 bg-white font-bold text-slate-900 text-sm focus:outline-emerald-600" oninput="autoSaveCurrentStepData()">
+              <span class="text-[11px] text-slate-600">Mål: &ge; 1.34 för ren sweetspot-träff</span>
+            </div>
+          </div>
+
+          <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+            <label class="block font-bold text-slate-800 mb-1">Klubbhastighet Järn (mph)</label>
+            <input type="number" id="s1_clubspeed" placeholder="t.ex. 78" class="w-28 p-2 rounded-lg border border-slate-300 bg-white font-bold text-slate-900 text-sm focus:outline-emerald-600" oninput="autoSaveCurrentStepData()">
+          </div>
+
+          <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+            <label class="block font-bold text-slate-800 mb-1.5">Känsla i bollträffen</label>
+            <div class="flex gap-1.5">
+              <button id="strikeStar1" onclick="setStrikeQuality(1)" class="flex-1 py-1.5 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 bg-slate-50 hover:bg-emerald-50">1★</button>
+              <button id="strikeStar2" onclick="setStrikeQuality(2)" class="flex-1 py-1.5 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 bg-slate-50 hover:bg-emerald-50">2★</button>
+              <button id="strikeStar3" onclick="setStrikeQuality(3)" class="flex-1 py-1.5 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 bg-slate-50 hover:bg-emerald-50">3★</button>
+              <button id="strikeStar4" onclick="setStrikeQuality(4)" class="flex-1 py-1.5 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 bg-slate-50 hover:bg-emerald-50">4★</button>
+              <button id="strikeStar5" onclick="setStrikeQuality(5)" class="flex-1 py-1.5 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 bg-slate-50 hover:bg-emerald-50">5★</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 1 FORM: Wedge-kalibrering -->
+        <div id="formStep1" class="space-y-3 text-xs hidden">
+          <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+            <label class="block font-bold text-slate-800 mb-1">Trackman Attack Angle (Wedge)</label>
+            <div class="flex items-center gap-2">
+              <input type="number" id="s2_attack" step="0.1" placeholder="t.ex. -4.1" class="w-28 p-2 rounded-lg border border-slate-300 bg-white font-bold text-slate-900 text-sm focus:outline-emerald-600" oninput="autoSaveCurrentStepData()">
+              <span class="text-[11px] text-slate-600">Mål: -3.5° till -4.5° (slå ned)</span>
+            </div>
+          </div>
+
+          <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+            <div class="flex items-center justify-between">
+              <label class="font-bold text-slate-800">Dagens Carry vid Kl 09:00 (m)</label>
+              <button onclick="syncWedgeCarriesToMatrix()" class="text-[10px] font-bold px-2 py-1 bg-emerald-100 text-emerald-800 rounded hover:bg-emerald-200 transition">Synka till Matris &rarr;</button>
+            </div>
+            <div class="grid grid-cols-3 gap-2 text-center">
+              <div>
+                <span class="text-[10px] font-bold text-emerald-800 block mb-1">50° Gap</span>
+                <input type="number" id="s2_carry50" placeholder="58" class="w-full p-2 text-center rounded-lg border border-slate-300 bg-white font-bold text-slate-900 text-sm focus:outline-emerald-600" oninput="autoSaveCurrentStepData()">
+              </div>
+              <div>
+                <span class="text-[10px] font-bold text-emerald-800 block mb-1">56° Sand</span>
+                <input type="number" id="s2_carry56" placeholder="45" class="w-full p-2 text-center rounded-lg border border-slate-300 bg-white font-bold text-slate-900 text-sm focus:outline-emerald-600" oninput="autoSaveCurrentStepData()">
+              </div>
+              <div>
+                <span class="text-[10px] font-bold text-emerald-800 block mb-1">60° Lob</span>
+                <input type="number" id="s2_carry60" placeholder="35" class="w-full p-2 text-center rounded-lg border border-slate-300 bg-white font-bold text-slate-900 text-sm focus:outline-emerald-600" oninput="autoSaveCurrentStepData()">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 2 FORM: Driver & Utslag -->
+        <div id="formStep2" class="space-y-3 text-xs hidden">
+          <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+            <label class="block font-bold text-slate-800 mb-1">Face-to-Path (°)</label>
+            <div class="flex items-center gap-2">
+              <input type="number" id="s3_face_path" step="0.1" placeholder="t.ex. +1.2" class="w-28 p-2 rounded-lg border border-slate-300 bg-white font-bold text-slate-900 text-sm focus:outline-emerald-600" oninput="autoSaveCurrentStepData()">
+              <span class="text-[11px] text-slate-600">Mål: &plusmn;2.5° för att undvika plikt</span>
+            </div>
+          </div>
+
+          <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+            <label class="block font-bold text-slate-800 mb-1">Driver Attack Angle (°)</label>
+            <div class="flex items-center gap-2">
+              <input type="number" id="s3_driver_attack" step="0.1" placeholder="t.ex. +1.8" class="w-28 p-2 rounded-lg border border-slate-300 bg-white font-bold text-slate-900 text-sm focus:outline-emerald-600" oninput="autoSaveCurrentStepData()">
+              <span class="text-[11px] text-slate-600">Mål: +1.0° till +3.0° (slå upp)</span>
+            </div>
+          </div>
+
+          <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+            <div class="flex justify-between items-center mb-1">
+              <label class="font-bold text-slate-800">Träffar i 35m-korridoren (av 10 slag)</label>
+              <span id="s3_fairway_label" class="text-xs font-extrabold text-emerald-700">7 / 10 i spel</span>
+            </div>
+            <input type="range" id="s3_fairways_slider" min="0" max="10" value="7" step="1" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-600 touch-manipulation my-1" oninput="document.getElementById('s3_fairway_label').textContent = this.value + ' / 10 i spel'; autoSaveCurrentStepData();">
+          </div>
+
+          <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+            <label class="block font-bold text-slate-800 mb-1">Snitt Driver Carry (m)</label>
+            <input type="number" id="s3_driver_carry" placeholder="t.ex. 185" class="w-28 p-2 rounded-lg border border-slate-300 bg-white font-bold text-slate-900 text-sm focus:outline-emerald-600" oninput="autoSaveCurrentStepData()">
+          </div>
+        </div>
+
+        <!-- STEP 3 FORM: Paus & Analys -->
+        <div id="formStep3" class="space-y-3 text-xs hidden">
+          <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+            <label class="block font-bold text-slate-800 mb-1">Dagens fokusord inför spel</label>
+            <input type="text" id="s4_focus" placeholder="t.ex. Lugn baksving, sikte mot mitten" class="w-full p-2 rounded-lg border border-slate-300 bg-white font-semibold text-slate-900 text-xs focus:outline-emerald-600" oninput="autoSaveCurrentStepData()">
+          </div>
+
+          <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+            <label class="block font-bold text-slate-800 mb-1">Reflektion & observationer</label>
+            <textarea id="s4_notes" rows="3" placeholder="Hur kändes kroppen och klubbhuvudets fart idag?" class="w-full p-2 rounded-lg border border-slate-300 bg-white text-slate-900 text-xs focus:outline-emerald-600" oninput="autoSaveCurrentStepData()"></textarea>
+          </div>
+        </div>
+
+        <!-- STEP 4 FORM: 9 Virtuella Hål -->
+        <div id="formStep4" class="space-y-3 text-xs hidden">
+          <div class="grid grid-cols-2 gap-2">
+            <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+              <label class="block font-bold text-slate-800 mb-1">Bana</label>
+              <input type="text" id="s5_course" placeholder="t.ex. St Andrews" class="w-full p-2 rounded-lg border border-slate-300 bg-white text-xs font-semibold focus:outline-emerald-600" oninput="autoSaveCurrentStepData()">
+            </div>
+            <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+              <label class="block font-bold text-slate-800 mb-1">Score (9 hål)</label>
+              <input type="text" id="s5_score" placeholder="t.ex. +7" class="w-full p-2 rounded-lg border border-slate-300 bg-white font-bold text-sm text-emerald-800 focus:outline-emerald-600" oninput="autoSaveCurrentStepData()">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2 text-center">
+            <div class="p-2 rounded-xl bg-slate-50 border border-slate-200">
+              <span class="text-[10px] font-bold text-slate-600 block mb-1">Fairways (FIR)</span>
+              <input type="text" id="s5_fir" placeholder="5/7" class="w-full p-1.5 text-center rounded-lg border border-slate-300 bg-white font-bold text-xs" oninput="autoSaveCurrentStepData()">
+            </div>
+            <div class="p-2 rounded-xl bg-slate-50 border border-slate-200">
+              <span class="text-[10px] font-bold text-slate-600 block mb-1">Greener (GIR)</span>
+              <input type="text" id="s5_gir" placeholder="3/9" class="w-full p-1.5 text-center rounded-lg border border-slate-300 bg-white font-bold text-xs" oninput="autoSaveCurrentStepData()">
+            </div>
+            <div class="p-2 rounded-xl bg-rose-50/70 border border-rose-200">
+              <span class="text-[10px] font-bold text-rose-800 block mb-1">Pliktslag / OB</span>
+              <input type="number" id="s5_penalties" placeholder="0" class="w-full p-1.5 text-center rounded-lg border border-rose-300 bg-white font-bold text-xs text-rose-700" oninput="autoSaveCurrentStepData()">
+            </div>
+          </div>
+        </div>
+
+        <!-- Navigation Buttons between steps -->
+        <div class="flex gap-2 pt-2 border-t border-slate-100">
+          <button id="btnBackStep" onclick="prevStep()" class="py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition disabled:opacity-40 disabled:cursor-not-allowed">
+            &larr; Tillbaka
+          </button>
+          <button id="btnNextStep" onclick="nextStep()" class="flex-1 py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition shadow-sm flex items-center justify-center gap-1.5">
+            <span id="nextStepText">Spara & Nästa steg &rarr;</span>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Training History Card -->
+      <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-3">
+        <div class="flex items-center justify-between">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500">Dina Sparade Pass</h4>
+          <button onclick="clearSessionHistory()" class="text-[11px] text-slate-500 hover:text-rose-600 transition">Rensa logg</button>
+        </div>
+        <div id="sessionHistoryList" class="space-y-2">
+          <!-- Populated dynamically from localStorage -->
+        </div>
+      </div>
+
+    </section>
+
+    <!-- TAB 3: TRACKMAN DATA & MÅLVÄRDEN -->
+    <section id="guideTab" class="space-y-4 hidden">
+      
+      <!-- Key Targets Card -->
+      <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-3">
+        <div class="flex items-center gap-2">
+          <span class="text-base">🎯</span>
+          <h2 class="text-sm font-bold text-slate-900">Målvärden för HCP 18</h2>
+        </div>
+        <p class="text-xs text-slate-600 leading-relaxed">
+          För att nå 18 behöver du inte slå tourens längder. Du behöver <strong>eliminera katastrofmissar</strong> från tee och undvika dubbelslag i närspelet.
+        </p>
+
+        <div class="grid grid-cols-2 gap-2.5 pt-1">
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+            <span class="text-[10px] uppercase font-bold text-slate-500 block">Driver Face-to-Path</span>
+            <span class="text-lg font-black text-emerald-700">± 2.5°</span>
+            <span class="text-[11px] text-slate-600 block mt-0.5">Minimerar slice / hook ut i skog och plikt.</span>
+          </div>
+
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+            <span class="text-[10px] uppercase font-bold text-slate-500 block">Driver Attack Angle</span>
+            <span class="text-lg font-black text-emerald-700">+1° till +3°</span>
+            <span class="text-[11px] text-slate-600 block mt-0.5">Slå upp på bollen för gratis bärighet & rull.</span>
+          </div>
+
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+            <span class="text-[10px] uppercase font-bold text-slate-500 block">Järn Smash Factor</span>
+            <span class="text-lg font-black text-emerald-700">&ge; 1.34</span>
+            <span class="text-[11px] text-slate-600 block mt-0.5">Mäter träff i sweetspot vs svingfart.</span>
+          </div>
+
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+            <span class="text-[10px] uppercase font-bold text-slate-500 block">Wedge Attack Angle</span>
+            <span class="text-lg font-black text-emerald-700">-3.5° till -5.0°</span>
+            <span class="text-[11px] text-slate-600 block mt-0.5">Träffa bollen före mattan, ren kompression.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Simulator Troubleshooting Card -->
+      <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-3">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Snabbguide: Felsök din bollbana</h3>
+        
+        <div class="space-y-2 text-xs">
+          <div class="p-2.5 rounded-xl bg-amber-50/70 border border-amber-200">
+            <div class="font-bold text-amber-950 flex items-center justify-between">
+              <span>Bollen startar rakt men skruvar höger (Slice)</span>
+              <span class="text-[10px] font-mono bg-amber-200 text-amber-900 px-1.5 py-0.5 rounded">Face öppen</span>
+            </div>
+            <p class="text-slate-700 mt-1 leading-relaxed">
+              Ditt blad (Face Angle) är öppet relativt svinglinjen (Club Path). Kontrollera ett mer neutralt/starkt vänstergrepp och stäng klubb-bladet något tidigare genom träffen.
+            </p>
+          </div>
+
+          <div class="p-2.5 rounded-xl bg-rose-50/70 border border-rose-200">
+            <div class="font-bold text-rose-950 flex items-center justify-between">
+              <span>Bollen startar vänster och fortsätter vänster (Pull-Hook)</span>
+              <span class="text-[10px] font-mono bg-rose-200 text-rose-900 px-1.5 py-0.5 rounded">Out-to-in</span>
+            </div>
+            <p class="text-slate-700 mt-1 leading-relaxed">
+              Klubban kommer för mycket utifrån-och-in (Club Path minus) med stängt blad. Känn att baksvingen är mer centrerad och att armbågarna faller mjukt ned mot höften i nedsvingen.
+            </p>
+          </div>
+
+          <div class="p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-200">
+            <div class="font-bold text-emerald-950 flex items-center justify-between">
+              <span>Hög "ballong"-träff med kort längd (Sky/Pop-up)</span>
+              <span class="text-[10px] font-mono bg-emerald-200 text-emerald-900 px-1.5 py-0.5 rounded">Negativ attack</span>
+            </div>
+            <p class="text-slate-700 mt-1 leading-relaxed">
+              Du slår nedåt på drivern (Attack Angle under 0°). Flytta bollen en boll framåt mot vänster häl och luta ryggraden 2–3 grader bakåt vid uppställning.
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Edit Cell Value Modal -->
+  <div id="editModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-end sm:items-center justify-center p-4 z-50 hidden transition-opacity">
+    <div class="bg-white rounded-2xl w-full max-w-xs p-5 shadow-xl border border-slate-200 space-y-4 animate-in fade-in zoom-in-95 duration-150">
+      <div class="flex justify-between items-center">
+        <div>
+          <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-700" id="modalClubLabel">Sand Wedge (56°)</span>
+          <h3 class="text-sm font-extrabold text-slate-900" id="modalPositionLabel">Kl 09:00 (Arm vågrät)</h3>
+        </div>
+        <button onclick="closeEditModal()" class="w-7 h-7 rounded-full bg-slate-100 text-slate-500 hover:text-slate-800 flex items-center justify-center text-sm font-bold">✕</button>
+      </div>
+
+      <div class="text-center py-2 bg-slate-50 rounded-xl border border-slate-200">
+        <span class="text-4xl font-black text-slate-900" id="modalValueDisplay">55</span>
+        <span class="text-sm font-bold text-slate-500 ml-1">meter</span>
+      </div>
+
+      <!-- Fast delta buttons -->
+      <div class="grid grid-cols-4 gap-2">
+        <button onclick="adjustModalValue(-5)" class="py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold rounded-lg transition border border-slate-200 touch-manipulation">-5m</button>
+        <button onclick="adjustModalValue(-1)" class="py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold rounded-lg transition border border-slate-200 touch-manipulation">-1m</button>
+        <button onclick="adjustModalValue(+1)" class="py-2.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-900 text-xs font-bold rounded-lg transition border border-emerald-200 touch-manipulation">+1m</button>
+        <button onclick="adjustModalValue(+5)" class="py-2.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-900 text-xs font-bold rounded-lg transition border border-emerald-200 touch-manipulation">+5m</button>
+      </div>
+
+      <div class="flex gap-2 pt-1">
+        <button onclick="closeEditModal()" class="flex-1 py-2.5 bg-slate-100 text-slate-700 font-bold rounded-xl text-xs hover:bg-slate-200 transition">Avbryt</button>
+        <button onclick="saveModalValue()" class="flex-1 py-2.5 bg-emerald-600 text-white font-bold rounded-xl text-xs hover:bg-emerald-700 transition shadow-sm">Spara</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reset Confirmation Modal (Replaces native confirm) -->
+  <div id="resetModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-white rounded-2xl w-full max-w-xs p-5 shadow-xl border border-slate-200 space-y-3 text-center">
+      <div class="w-10 h-10 rounded-full bg-rose-100 text-rose-600 mx-auto flex items-center justify-center text-lg font-bold">⚠️</div>
+      <h3 class="text-sm font-bold text-slate-900">Återställ matris?</h3>
+      <p class="text-xs text-slate-600 leading-relaxed">Alla sparade wedge-avstånd ersätts med standardvärden för HCP 28.</p>
+      <div class="flex gap-2 pt-2">
+        <button onclick="closeResetModal()" class="flex-1 py-2 bg-slate-100 text-slate-700 font-bold rounded-xl text-xs">Nej, behåll</button>
+        <button onclick="confirmReset()" class="flex-1 py-2 bg-rose-600 text-white font-bold rounded-xl text-xs hover:bg-rose-700">Ja, återställ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toastNotification" class="fixed bottom-5 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-xs font-semibold px-4 py-2.5 rounded-full shadow-lg pointer-events-none transition-all duration-300 opacity-0 transform translate-y-3 z-50 flex items-center gap-2">
+    <span id="toastIcon">✅</span>
+    <span id="toastMessage">Värde sparat</span>
+  </div>
+
+  <script>
+    // Wedge clubs matching user: PW (45°), 50° Gap, 56° Sand, 60° Lob
+    const clubs = [
+      { id: 'pw', name: 'Pitching Wedge (PW)', short: 'PW', loft: '45°' },
+      { id: 'w50', name: 'Gap Wedge', short: '50°', loft: '50°' },
+      { id: 'w56', name: 'Sand Wedge', short: '56°', loft: '56°' },
+      { id: 'w60', name: 'Lob Wedge', short: '60°', loft: '60°' }
+    ];
+
+    const positions = [
+      { id: '8', name: 'Kl 08:00', desc: 'Höfthöjd' },
+      { id: '9', name: 'Kl 09:00', desc: 'Arm vågrät' },
+      { id: '10', name: 'Kl 10:00', desc: '3/4 sving' },
+      { id: '12', name: 'Kl 12:00', desc: 'Full kontrollerad' }
+    ];
+
+    // Calibrated baseline values in meters for HCP 28
+    const defaultMatrix = {
+      'pw_8': 50, 'w50_8': 40, 'w56_8': 30, 'w60_8': 20,
+      'pw_9': 70, 'w50_9': 58, 'w56_9': 45, 'w60_9': 35,
+      'pw_10': 90, 'w50_10': 75, 'w56_10': 60, 'w60_10': 48,
+      'pw_12': 105, 'w50_12': 90, 'w56_12': 75, 'w60_12': 60
+    };
+
+    let matrixData = {};
+
+    // 120-min session phases
+    const sessionPhases = [
+      { id: 0, title: 'Uppvärmning & Bollträff', desc: 'PW / Järn 8. 50-70% tempo, hitta mitt i bladet.', duration: 15 * 60 },
+      { id: 1, title: 'Wedge-kalibrering (30-90m)', desc: 'Testa position 8, 9, 10. Notera Trackman Carry.', duration: 30 * 60 },
+      { id: 2, title: 'Driver & Utslagssäkerhet', desc: 'Håll Face-to-Path inom ±2.5°. 35m korridor.', duration: 30 * 60 },
+      { id: 3, title: 'Paus & Dataanalys', desc: 'Vätska och genomgång av Trackman-siffror.', duration: 10 * 60 },
+      { id: 4, title: '9 Hål Virtuell Bana', desc: 'Full rutin varje slag. Sikta alltid på mitt green.', duration: 35 * 60 }
+    ];
+
+    let currentPhaseIndex = 0;
+    let timerSecondsLeft = sessionPhases[0].duration;
+    let timerTotalElapsed = 0;
+    let timerInterval = null;
+    let isTimerRunning = false;
+    let activeEditKey = null;
+    let activeEditTempVal = 0;
+
+    // Interactive step data storage for current pass
+    let currentPassData = {
+      strikeQuality: 0,
+      step0: {},
+      step1: {},
+      step2: {},
+      step3: {},
+      step4: {}
+    };
+
+    let synth = null;
+    function initSynth() {
+      if (!synth && window.Tone) {
+        try {
+          synth = new Tone.Synth({
+            oscillator: { type: 'triangle' },
+            envelope: { attack: 0.005, decay: 0.1, sustain: 0.0, release: 0.1 }
+          }).toDestination();
+        } catch (e) {
+          console.log('Audio not supported:', e);
+        }
+      }
+    }
+
+    function playBeep(freq = 'C5', duration = '8n') {
+      try {
+        if (!synth) initSynth();
+        if (synth && Tone.context.state === 'running') {
+          synth.triggerAttackRelease(freq, duration);
+        }
+      } catch (e) {}
+    }
+
+    function initMatrix() {
+      // In-memory load with graceful fallback
+      try {
+        const stored = localStorage.getItem('trackman_wedge_matrix_v3');
+        if (stored) {
+          matrixData = JSON.parse(stored);
+        } else {
+          matrixData = { ...defaultMatrix };
+        }
+      } catch (e) {
+        matrixData = { ...defaultMatrix };
+      }
+
+      renderMatrixTable();
+      updateRecommendation(parseInt(document.getElementById('targetDistSlider').value, 10));
+    }
+
+    function saveMatrixData() {
+      try {
+        localStorage.setItem('trackman_wedge_matrix_v3', JSON.stringify(matrixData));
+      } catch (e) {}
+    }
+
+    function renderMatrixTable() {
+      const tbody = document.getElementById('matrixGridBody');
+      tbody.innerHTML = '';
+
+      positions.forEach(pos => {
+        const row = document.createElement('tr');
+        row.className = 'hover:bg-slate-50 transition border-b border-slate-100 last:border-0';
+
+        // Position name cell
+        const posTd = document.createElement('td');
+        posTd.className = 'py-3 px-2 text-left pl-3 text-slate-800 bg-slate-50/70 border-r border-slate-100';
+        posTd.innerHTML = `<span class="font-bold block text-xs">${pos.name}</span><span class="text-[10px] text-slate-500">${pos.desc}</span>`;
+        row.appendChild(posTd);
+
+        // Club cells
+        clubs.forEach(club => {
+          const key = `${club.id}_${pos.id}`;
+          const val = matrixData[key] !== undefined ? matrixData[key] : '-';
+
+          const cell = document.createElement('td');
+          cell.className = 'py-2.5 px-1 cursor-pointer transition';
+          cell.onclick = () => openEditModal(key, club.name, pos.name, val);
+
+          cell.innerHTML = `
+            <div class="inline-flex items-center justify-center font-bold px-2 py-1.5 rounded-lg bg-emerald-50 text-emerald-900 border border-emerald-200/80 hover:bg-emerald-100 hover:border-emerald-300 transition text-xs">
+              ${val}<span class="text-[9px] font-normal text-emerald-700 ml-0.5">m</span>
+            </div>
+          `;
+          row.appendChild(cell);
+        });
+
+        tbody.appendChild(row);
+      });
+    }
+
+    function onTargetSliderChange(val) {
+      document.getElementById('targetDistDisplay').textContent = `${val} m`;
+      updateRecommendation(parseInt(val, 10));
+    }
+
+    function updateRecommendation(targetDist) {
+      let bestMatch = null;
+      let minDiff = 999;
+
+      // Scan matrix entries
+      for (const club of clubs) {
+        for (const pos of positions) {
+          const key = `${club.id}_${pos.id}`;
+          const dist = matrixData[key];
+          if (dist !== undefined) {
+            const diff = Math.abs(dist - targetDist);
+            if (diff < minDiff) {
+              minDiff = diff;
+              bestMatch = {
+                club,
+                pos,
+                carry: dist,
+                diff: dist - targetDist
+              };
+            }
+          }
+        }
+      }
+
+      if (bestMatch) {
+        document.getElementById('recClubName').textContent = `${bestMatch.club.name}`;
+        document.getElementById('recClockSwing').textContent = `${bestMatch.pos.name} (${bestMatch.pos.desc})`;
+        document.getElementById('recCarryMeters').textContent = `${bestMatch.carry} m`;
+
+        const diffEl = document.getElementById('recDiffMeters');
+        if (bestMatch.diff === 0) {
+          diffEl.textContent = 'Exakt träff';
+          diffEl.className = 'text-[10px] font-bold text-emerald-700';
+        } else if (bestMatch.diff > 0) {
+          diffEl.textContent = `+${bestMatch.diff} m lång`;
+          diffEl.className = 'text-[10px] font-medium text-amber-600';
+        } else {
+          diffEl.textContent = `${bestMatch.diff} m kort`;
+          diffEl.className = 'text-[10px] font-medium text-blue-600';
+        }
+      }
+    }
+
+    function openEditModal(key, clubName, posName, currentVal) {
+      initSynth();
+      activeEditKey = key;
+      activeEditTempVal = typeof currentVal === 'number' ? currentVal : 50;
+
+      document.getElementById('modalClubLabel').textContent = clubName;
+      document.getElementById('modalPositionLabel').textContent = posName;
+      document.getElementById('modalValueDisplay').textContent = activeEditTempVal;
+      document.getElementById('editModal').classList.remove('hidden');
+    }
+
+    function adjustModalValue(delta) {
+      playBeep(delta > 0 ? 'G4' : 'E4', '16n');
+      activeEditTempVal = Math.max(5, Math.min(150, activeEditTempVal + delta));
+      document.getElementById('modalValueDisplay').textContent = activeEditTempVal;
+    }
+
+    function closeEditModal() {
+      document.getElementById('editModal').classList.add('hidden');
+    }
+
+    function saveModalValue() {
+      if (activeEditKey) {
+        matrixData[activeEditKey] = activeEditTempVal;
+        saveMatrixData();
+        renderMatrixTable();
+        updateRecommendation(parseInt(document.getElementById('targetDistSlider').value, 10));
+        closeEditModal();
+        showToast('Värde sparat i matrisen');
+        playBeep('C5', '8n');
+      }
+    }
+
+    // Reset flow
+    function openResetConfirm() {
+      document.getElementById('resetModal').classList.remove('hidden');
+    }
+
+    function closeResetModal() {
+      document.getElementById('resetModal').classList.add('hidden');
+    }
+
+    function confirmReset() {
+      matrixData = { ...defaultMatrix };
+      saveMatrixData();
+      renderMatrixTable();
+      updateRecommendation(parseInt(document.getElementById('targetDistSlider').value, 10));
+      closeResetModal();
+      showToast('Standardvärden återställda');
+    }
+
+    // Toast helper
+    function showToast(msg) {
+      const toast = document.getElementById('toastNotification');
+      document.getElementById('toastMessage').textContent = msg;
+      toast.classList.remove('opacity-0', 'translate-y-3');
+      toast.classList.add('opacity-100', 'translate-y-0');
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-3');
+        toast.classList.remove('opacity-100', 'translate-y-0');
+      }, 2000);
+    }
+
+    function formatTime(seconds) {
+      const m = Math.floor(seconds / 60);
+      const s = seconds % 60;
+      return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    }
+
+    function updateTimerUI() {
+      const current = sessionPhases[currentPhaseIndex];
+      document.getElementById('timerDigits').textContent = formatTime(timerSecondsLeft);
+      document.getElementById('timerPhaseTitle').textContent = current.title;
+      document.getElementById('timerPhaseDesc').textContent = current.desc;
+      document.getElementById('currentPhaseTag').textContent = `Fas ${currentPhaseIndex + 1} av ${sessionPhases.length}`;
+      document.getElementById('totalTimeElapsed').textContent = `Totalt: ${formatTime(timerTotalElapsed)} / 120:00`;
+
+      // Progress circle calculation
+      const circle = document.getElementById('timerProgressCircle');
+      const circumference = 276.46;
+      const progress = (current.duration - timerSecondsLeft) / current.duration;
+      circle.style.strokeDashoffset = (circumference * (1 - progress)).toString();
+
+      // Highlight schedule item
+      for (let i = 0; i < sessionPhases.length; i++) {
+        const item = document.getElementById(`phaseItem${i}`);
+        if (i === currentPhaseIndex) {
+          item.className = 'p-2.5 rounded-xl border border-emerald-300 bg-emerald-50 flex items-center justify-between shadow-xs';
+        } else {
+          item.className = 'p-2.5 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-between opacity-80';
+        }
+      }
+    }
+
+    function toggleTimer() {
+      initSynth();
+      if (Tone.context.state !== 'running') {
+        Tone.start();
+      }
+
+      if (isTimerRunning) {
+        pauseTimer();
+      } else {
+        startTimer();
+      }
+    }
+
+    function startTimer() {
+      isTimerRunning = true;
+      document.getElementById('playIcon').textContent = '⏸';
+      document.getElementById('playText').textContent = 'Pausa';
+      document.getElementById('btnPlayPause').className = 'px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl shadow-md transition flex items-center gap-2 touch-manipulation';
+
+      timerInterval = setInterval(() => {
+        if (timerSecondsLeft > 0) {
+          timerSecondsLeft--;
+          timerTotalElapsed++;
+          updateTimerUI();
+        } else {
+          // Phase finished
+          playBeep('G5', '4n');
+          if (currentPhaseIndex < sessionPhases.length - 1) {
+            nextPhase();
+          } else {
+            pauseTimer();
+            showToast('Passet är fullbordat! Bra jobbat.');
+          }
+        }
+      }, 1000);
+    }
+
+    function pauseTimer() {
+      isTimerRunning = false;
+      clearInterval(timerInterval);
+      document.getElementById('playIcon').textContent = '▶';
+      document.getElementById('playText').textContent = 'Fortsätt';
+      document.getElementById('btnPlayPause').className = 'px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md transition flex items-center gap-2 touch-manipulation';
+    }
+
+    function resetTimer() {
+      pauseTimer();
+      currentPhaseIndex = 0;
+      timerSecondsLeft = sessionPhases[0].duration;
+      timerTotalElapsed = 0;
+      document.getElementById('playText').textContent = 'Starta';
+      updateTimerUI();
+    }
+
+    function nextPhase() {
+      if (currentPhaseIndex < sessionPhases.length - 1) {
+        currentPhaseIndex++;
+        timerSecondsLeft = sessionPhases[currentPhaseIndex].duration;
+        updateTimerUI();
+        playBeep('E5', '8n');
+      }
+    }
+
+    function prevPhase() {
+      if (currentPhaseIndex > 0) {
+        currentPhaseIndex--;
+        timerSecondsLeft = sessionPhases[currentPhaseIndex].duration;
+        updateTimerUI();
+        playBeep('C5', '8n');
+      }
+    }
+
+    function switchTab(tab) {
+      initSynth();
+      const tabMatrix = document.getElementById('tabMatrix');
+      const tabTimer = document.getElementById('tabTimer');
+      const tabGuide = document.getElementById('guideTab');
+
+      const btnMatrix = document.getElementById('tabBtnMatrix');
+      const btnTimer = document.getElementById('tabBtnTimer');
+      const btnGuide = document.getElementById('tabBtnGuide');
+
+      // Reset all buttons
+      [btnMatrix, btnTimer, btnGuide].forEach(b => {
+        b.className = 'flex-1 py-2 px-2 text-xs font-semibold rounded-lg transition-all duration-150 text-slate-600 hover:text-slate-900 flex items-center justify-center gap-1.5';
+      });
+
+      // Hide all tabs
+      tabMatrix.classList.add('hidden');
+      tabTimer.classList.add('hidden');
+      tabGuide.classList.add('hidden');
+
+      if (tab === 'matrix') {
+        tabMatrix.classList.remove('hidden');
+        btnMatrix.className = 'flex-1 py-2 px-2 text-xs font-semibold rounded-lg transition-all duration-150 bg-white text-emerald-800 shadow-sm border border-slate-200/60 flex items-center justify-center gap-1.5';
+      } else if (tab === 'timer') {
+        tabTimer.classList.remove('hidden');
+        btnTimer.className = 'flex-1 py-2 px-2 text-xs font-semibold rounded-lg transition-all duration-150 bg-white text-emerald-800 shadow-sm border border-slate-200/60 flex items-center justify-center gap-1.5';
+        updateStepUI();
+        renderSessionHistory();
+      } else if (tab === 'guide') {
+        tabGuide.classList.remove('hidden');
+        btnGuide.className = 'flex-1 py-2 px-2 text-xs font-semibold rounded-lg transition-all duration-150 bg-white text-emerald-800 shadow-sm border border-slate-200/60 flex items-center justify-center gap-1.5';
+      }
+    }
+
+    // Step-by-Step Training Guide Functions
+    function goToStep(index) {
+      if (index < 0 || index >= sessionPhases.length) return;
+      currentPhaseIndex = index;
+      timerSecondsLeft = sessionPhases[currentPhaseIndex].duration;
+      pauseStepTimer();
+      updateStepUI();
+    }
+
+    function updateStepUI() {
+      const step = sessionPhases[currentPhaseIndex];
+      if (!step) return;
+
+      const progressEl = document.getElementById('stepProgressIndicator');
+      if (progressEl) progressEl.textContent = `Steg ${currentPhaseIndex + 1} av 5`;
+
+      const titleEl = document.getElementById('stepHeaderTitle');
+      if (titleEl) titleEl.textContent = `${currentPhaseIndex + 1}. ${step.title}`;
+
+      const descEl = document.getElementById('stepHeaderDesc');
+      if (descEl) descEl.textContent = step.desc;
+
+      const badgeEl = document.getElementById('stepBadge');
+      if (badgeEl) badgeEl.textContent = `${formatStepTimeRange(currentPhaseIndex)} (${step.duration / 60} min)`;
+
+      const timerDigitsEl = document.getElementById('stepTimerDigits');
+      if (timerDigitsEl) timerDigitsEl.textContent = formatTime(timerSecondsLeft);
+
+      // Highlight step pills and toggle forms safely
+      for (let i = 0; i < 5; i++) {
+        const tab = document.getElementById(`stepTab${i}`);
+        const form = document.getElementById(`formStep${i}`);
+        if (tab) {
+          if (i === currentPhaseIndex) {
+            tab.className = 'py-1.5 px-1 rounded-lg text-xs font-bold text-center border transition bg-emerald-600 text-white border-emerald-600 shadow-xs';
+          } else {
+            tab.className = 'py-1.5 px-1 rounded-lg text-xs font-bold text-center border transition bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100';
+          }
+        }
+        if (form) {
+          if (i === currentPhaseIndex) {
+            form.classList.remove('hidden');
+          } else {
+            form.classList.add('hidden');
+          }
+        }
+      }
+
+      // Back / Next button state
+      const backBtn = document.getElementById('btnBackStep');
+      if (backBtn) backBtn.disabled = (currentPhaseIndex === 0);
+
+      const nextBtnText = document.getElementById('nextStepText');
+      if (nextBtnText) {
+        if (currentPhaseIndex === 4) {
+          nextBtnText.textContent = 'Slutför & Spara passet! 🏁';
+        } else {
+          nextBtnText.textContent = 'Spara & Nästa steg →';
+        }
+      }
+    }
+
+    function formatStepTimeRange(index) {
+      const ranges = ['00–15 min', '15–45 min', '45–75 min', '75–85 min', '85–120 min'];
+      return ranges[index] || '';
+    }
+
+    function nextStep() {
+      autoSaveCurrentStepData();
+      playBeep('E5', '8n');
+
+      if (currentPhaseIndex < 4) {
+        goToStep(currentPhaseIndex + 1);
+        showToast(`Steg ${currentPhaseIndex} sparat`);
+      } else {
+        // Complete full session
+        finishSession();
+      }
+    }
+
+    function prevStep() {
+      if (currentPhaseIndex > 0) {
+        autoSaveCurrentStepData();
+        goToStep(currentPhaseIndex - 1);
+      }
+    }
+
+    function toggleStepTimer() {
+      initSynth();
+      if (Tone.context.state !== 'running') {
+        Tone.start();
+      }
+
+      if (isTimerRunning) {
+        pauseStepTimer();
+      } else {
+        startStepTimer();
+      }
+    }
+
+    function startStepTimer() {
+      isTimerRunning = true;
+      document.getElementById('stepPlayIcon').textContent = '⏸';
+      document.getElementById('stepPlayText').textContent = 'Pausa';
+      document.getElementById('stepPlayPauseBtn').className = 'mt-1 px-2.5 py-1 text-[11px] font-bold rounded-lg bg-amber-600 hover:bg-amber-700 text-white shadow-xs transition flex items-center gap-1 mx-auto';
+
+      timerInterval = setInterval(() => {
+        if (timerSecondsLeft > 0) {
+          timerSecondsLeft--;
+          document.getElementById('stepTimerDigits').textContent = formatTime(timerSecondsLeft);
+        } else {
+          playBeep('G5', '4n');
+          pauseStepTimer();
+          showToast(`Tid ute för ${sessionPhases[currentPhaseIndex].title}!`);
+        }
+      }, 1000);
+    }
+
+    function pauseStepTimer() {
+      isTimerRunning = false;
+      clearInterval(timerInterval);
+      document.getElementById('stepPlayIcon').textContent = '▶';
+      document.getElementById('stepPlayText').textContent = 'Starta';
+      const btn = document.getElementById('stepPlayPauseBtn');
+      if (btn) {
+        btn.className = 'mt-1 px-2.5 py-1 text-[11px] font-bold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition flex items-center gap-1 mx-auto';
+      }
+    }
+
+    function setStrikeQuality(stars) {
+      currentPassData.strikeQuality = stars;
+      for (let i = 1; i <= 5; i++) {
+        const starBtn = document.getElementById(`strikeStar${i}`);
+        if (i <= stars) {
+          starBtn.className = 'flex-1 py-1.5 border border-emerald-400 rounded-lg text-xs font-bold text-white bg-emerald-600 shadow-xs';
+        } else {
+          starBtn.className = 'flex-1 py-1.5 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 bg-slate-50 hover:bg-emerald-50';
+        }
+      }
+      autoSaveCurrentStepData();
+    }
+
+    function autoSaveCurrentStepData() {
+      currentPassData.step0 = {
+        smash: document.getElementById('s1_smash').value,
+        speed: document.getElementById('s1_clubspeed').value,
+        strike: currentPassData.strikeQuality
+      };
+
+      currentPassData.step1 = {
+        attack: document.getElementById('s2_attack').value,
+        carry50: document.getElementById('s2_carry50').value,
+        carry56: document.getElementById('s2_carry56').value,
+        carry60: document.getElementById('s2_carry60').value
+      };
+
+      currentPassData.step2 = {
+        facePath: document.getElementById('s3_face_path').value,
+        driverAttack: document.getElementById('s3_driver_attack').value,
+        fairways: document.getElementById('s3_fairways_slider').value,
+        driverCarry: document.getElementById('s3_driver_carry').value
+      };
+
+      currentPassData.step3 = {
+        focus: document.getElementById('s4_focus').value,
+        notes: document.getElementById('s4_notes').value
+      };
+
+      currentPassData.step4 = {
+        course: document.getElementById('s5_course').value,
+        score: document.getElementById('s5_score').value,
+        fir: document.getElementById('s5_fir').value,
+        gir: document.getElementById('s5_gir').value,
+        penalties: document.getElementById('s5_penalties').value
+      };
+
+      try {
+        localStorage.setItem('trackman_current_active_pass', JSON.stringify(currentPassData));
+      } catch (e) {}
+    }
+
+    function syncWedgeCarriesToMatrix() {
+      const c50 = parseInt(document.getElementById('s2_carry50').value, 10);
+      const c56 = parseInt(document.getElementById('s2_carry56').value, 10);
+      const c60 = parseInt(document.getElementById('s2_carry60').value, 10);
+
+      let count = 0;
+      if (!isNaN(c50)) { matrixData['w50_9'] = c50; count++; }
+      if (!isNaN(c56)) { matrixData['w56_9'] = c56; count++; }
+      if (!isNaN(c60)) { matrixData['w60_9'] = c60; count++; }
+
+      if (count > 0) {
+        saveMatrixData();
+        renderMatrixTable();
+        showToast(`${count} värden synkades till kl 09:00 i matrisen!`);
+        playBeep('C5', '8n');
+      } else {
+        showToast('Fyll i minst ett carry-värde först');
+      }
+    }
+
+    let currentlyViewedSummary = null;
+
+    function finishSession() {
+      autoSaveCurrentStepData();
+
+      const sessionEntry = {
+        date: new Date().toLocaleDateString('sv-SE', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
+        smash: currentPassData.step0.smash || '-',
+        speed: currentPassData.step0.speed || '-',
+        strike: currentPassData.strikeQuality ? `${currentPassData.strikeQuality}★` : '-',
+        wedgeAttack: currentPassData.step1.attack || '-',
+        carry50: currentPassData.step1.carry50 || '-',
+        carry56: currentPassData.step1.carry56 || '-',
+        carry60: currentPassData.step1.carry60 || '-',
+        driverCorridor: currentPassData.step2.fairways ? `${currentPassData.step2.fairways}/10` : '7/10',
+        fairwaysNum: parseInt(currentPassData.step2.fairways || 7, 10),
+        facePath: currentPassData.step2.facePath || '-',
+        driverAttack: currentPassData.step2.driverAttack || '-',
+        driverCarry: currentPassData.step2.driverCarry || '-',
+        course: currentPassData.step4.course || 'Simulatorbana',
+        score: currentPassData.step4.score || '+?',
+        fir: currentPassData.step4.fir || '-',
+        gir: currentPassData.step4.gir || '-',
+        penalties: currentPassData.step4.penalties || '0',
+        focus: currentPassData.step3.focus || '-',
+        notes: currentPassData.step3.notes || ''
+      };
+
+      let history = getSessionHistory();
+      history.unshift(sessionEntry);
+      if (history.length > 15) history.pop();
+
+      try {
+        localStorage.setItem('trackman_session_history', JSON.stringify(history));
+      } catch (e) {}
+
+      renderSessionHistory();
+      showToast('🎉 Passet slutfört och sparat!');
+      playBeep('C5', '4n');
+
+      // Automatically open the full summary modal for this completed session
+      openSessionSummary(0);
+    }
+
+    function getSessionHistory() {
+      try {
+        const data = localStorage.getItem('trackman_session_history');
+        return data ? JSON.parse(data) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function renderSessionHistory() {
+      const list = document.getElementById('sessionHistoryList');
+      const history = getSessionHistory();
+
+      if (!history || history.length === 0) {
+        list.innerHTML = `
+          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-slate-500 text-center text-[11px]">
+            Inga sparade pass ännu. Slutför steg 5 för att logga och få en full pass-summering!
+          </div>
+        `;
+        return;
+      }
+
+      list.innerHTML = '';
+      history.forEach((item, index) => {
+        const card = document.createElement('div');
+        card.className = 'p-3 bg-slate-50 hover:bg-emerald-50/40 border border-slate-200 rounded-xl space-y-1.5 transition cursor-pointer';
+        card.onclick = () => openSessionSummary(index);
+
+        const penaltiesCount = parseInt(item.penalties, 10);
+        const penaltyColor = !isNaN(penaltiesCount) && penaltiesCount > 0 ? 'text-rose-600 font-bold' : 'text-emerald-700 font-bold';
+
+        card.innerHTML = `
+          <div class="flex justify-between items-center text-xs">
+            <div>
+              <span class="font-bold text-slate-900">${item.date}</span>
+              <span class="text-[10px] text-slate-500 ml-1.5">${item.course}</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[11px]">${item.score}</span>
+              <span class="text-[10px] text-emerald-700 font-semibold hover:underline">Visa 📋</span>
+            </div>
+          </div>
+          <div class="grid grid-cols-4 gap-1 text-[10px] text-slate-600 pt-1 border-t border-slate-200/60">
+            <div><span class="text-slate-500 block">Smash</span><strong>${item.smash}</strong></div>
+            <div><span class="text-slate-500 block">Korridor</span><strong>${item.driverCorridor}</strong></div>
+            <div><span class="text-slate-500 block">F-to-P</span><strong>${item.facePath}${item.facePath !== '-' ? '°' : ''}</strong></div>
+            <div><span class="text-slate-500 block">Plikter</span><span class="${penaltyColor}">${item.penalties}</span></div>
+          </div>
+          ${item.focus && item.focus !== '-' ? `<div class="text-[10px] text-slate-600 italic truncate">" ${item.focus} "</div>` : ''}
+        `;
+        list.appendChild(card);
+      });
+    }
+
+    function openSessionSummary(index) {
+      initSynth();
+      const history = getSessionHistory();
+      const session = history[index];
+      if (!session) return;
+
+      currentlyViewedSummary = session;
+
+      const setElText = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val;
+      };
+
+      const setElHtml = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = val;
+      };
+
+      setElText('summaryDateLabel', session.date);
+      setElText('summaryCourseName', session.course || 'Simulatorbana');
+      setElText('summaryScoreDisplay', session.score || '-');
+
+      // Step 1
+      setElText('sumStep0Info', `Smash: ${session.smash} | Hastighet: ${session.speed ? session.speed + ' mph' : '-'} | ${session.strike}`);
+
+      // Step 2
+      setElText('sumStep1Attack', `Attack: ${session.wedgeAttack}${session.wedgeAttack !== '-' ? '°' : ''}`);
+      setElText('sumStep1Carries', `50°: ${session.carry50}m | 56°: ${session.carry56}m | 60°: ${session.carry60}m`);
+
+      // Step 3
+      setElText('sumStep2Fairways', `${session.driverCorridor} i korridor`);
+      setElText('sumStep2Details', `Face-Path: ${session.facePath}${session.facePath !== '-' ? '°' : ''} | Attack: ${session.driverAttack}${session.driverAttack !== '-' ? '°' : ''} | Carry: ${session.driverCarry ? session.driverCarry + 'm' : '-'}`);
+
+      // Step 4
+      setElText('sumStep3Focus', session.focus && session.focus !== '-' ? `"${session.focus}"` : 'Inget specifikt fokusord noterat.');
+      setElText('sumStep3Notes', session.notes || '');
+
+      // Step 5
+      setElHtml('sumStep4Stats', `
+        <span><strong>FIR:</strong> ${session.fir}</span>
+        <span><strong>GIR:</strong> ${session.gir}</span>
+        <span class="${parseInt(session.penalties, 10) > 0 ? 'text-rose-600 font-bold' : 'text-emerald-700 font-bold'}"><strong>Plikter:</strong> ${session.penalties} st</span>
+      `);
+
+      // Benchmarks calculation for HCP 18 targets
+      renderSummaryBenchmarks(session);
+
+      const modal = document.getElementById('summaryModal');
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function renderSummaryBenchmarks(session) {
+      const grid = document.getElementById('summaryBenchmarksGrid');
+      const badge = document.getElementById('summaryHcpBadge');
+      if (!grid) return;
+      grid.innerHTML = '';
+
+      let greenCount = 0;
+
+      // 1. Pliktslag Check (Key to 18 HCP)
+      const penalties = parseInt(session.penalties, 10);
+      const penOk = !isNaN(penalties) && penalties === 0;
+      if (penOk) greenCount++;
+      grid.appendChild(createBenchmarkCard(
+        'Plikter från tee',
+        `${session.penalties} st`,
+        penOk ? 'bg-emerald-50 border-emerald-300 text-emerald-900' : 'bg-rose-50 border-rose-300 text-rose-900',
+        penOk ? '✅ Mål: 0 plikter' : '⚠️ Kostar slag mot 18'
+      ));
+
+      // 2. Driverkorridor Check (35m width)
+      const fairways = session.fairwaysNum !== undefined ? session.fairwaysNum : parseInt(session.driverCorridor, 10);
+      const fwyOk = !isNaN(fairways) && fairways >= 6;
+      if (fwyOk) greenCount++;
+      grid.appendChild(createBenchmarkCard(
+        'Driver i 35m-zon',
+        session.driverCorridor,
+        fwyOk ? 'bg-emerald-50 border-emerald-300 text-emerald-900' : 'bg-amber-50 border-amber-300 text-amber-900',
+        fwyOk ? '✅ Bra spelsäkerhet' : '⚠️ Öka fokus på korridor'
+      ));
+
+      // 3. Face-to-Path Check (±2.5°)
+      const fpVal = parseFloat(session.facePath);
+      const fpOk = !isNaN(fpVal) && Math.abs(fpVal) <= 2.5;
+      if (fpOk) greenCount++;
+      grid.appendChild(createBenchmarkCard(
+        'Face-to-Path',
+        session.facePath !== '-' ? `${session.facePath}°` : '-',
+        fpOk ? 'bg-emerald-50 border-emerald-300 text-emerald-900' : 'bg-slate-50 border-slate-300 text-slate-800',
+        fpOk ? '✅ Kontrollerad kurva' : 'Mål: ±2.5°'
+      ));
+
+      // 4. Smash Factor Check (>= 1.34)
+      const smashVal = parseFloat(session.smash);
+      const smashOk = !isNaN(smashVal) && smashVal >= 1.34;
+      if (smashOk) greenCount++;
+      grid.appendChild(createBenchmarkCard(
+        'Smash Factor',
+        session.smash,
+        smashOk ? 'bg-emerald-50 border-emerald-300 text-emerald-900' : 'bg-slate-50 border-slate-300 text-slate-800',
+        smashOk ? '✅ Ren centrerad träff' : 'Mål: ≥ 1.34'
+      ));
+
+      // Overall Badge
+      if (badge) {
+        if (greenCount >= 3) {
+          badge.className = 'inline-block mt-1 px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-emerald-600 text-white shadow-xs';
+          badge.textContent = 'HCP 18-nivå! 🌟';
+        } else if (greenCount >= 2) {
+          badge.className = 'inline-block mt-1 px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-amber-500 text-white shadow-xs';
+          badge.textContent = 'Stabil grund 👍';
+        } else {
+          badge.className = 'inline-block mt-1 px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-slate-600 text-white shadow-xs';
+          badge.textContent = 'Träningsfas 🛠️';
+        }
+      }
+    }
+
+    function createBenchmarkCard(title, val, colorClasses, subtext) {
+      const el = document.createElement('div');
+      el.className = `p-2 rounded-xl border ${colorClasses} text-center`;
+      el.innerHTML = `
+        <span class="text-[10px] uppercase font-bold opacity-75 block">${title}</span>
+        <span class="text-sm font-black block my-0.5">${val}</span>
+        <span class="text-[9px] font-semibold opacity-90 block">${subtext}</span>
+      `;
+      return el;
+    }
+
+    function closeSummaryModal() {
+      document.getElementById('summaryModal').classList.add('hidden');
+    }
+
+    function copyCurrentSummaryText() {
+      if (!currentlyViewedSummary) return;
+      const s = currentlyViewedSummary;
+      const textToCopy = `⛳ TRACKMAN PASS-SUMMERING (${s.date})
+Mål: HCP 28 → 18
+Bana: ${s.course} | Resultat: ${s.score}
+Pliktslag: ${s.penalties} st
+Driverkorridor: ${s.driverCorridor} (Face-to-Path: ${s.facePath}°)
+Smash Factor: ${s.smash} (Känsla: ${s.strike})
+Wedgar kl 09:00: 50°: ${s.carry50}m | 56°: ${s.carry56}m | 60°: ${s.carry60}m
+Fokus: "${s.focus}"
+FIR: ${s.fir} | GIR: ${s.gir}`;
+
+      const tempInput = document.createElement('textarea');
+      tempInput.value = textToCopy;
+      tempInput.setAttribute('readonly', '');
+      tempInput.style.position = 'absolute';
+      tempInput.style.left = '-9999px';
+      document.body.appendChild(tempInput);
+      tempInput.select();
+      
+      try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+          showToast('📋 Sammanfattning kopierad till urklipp!');
+          playBeep('C5', '8n');
+        } else {
+          showToast('Kunde inte kopiera automatiskt');
+        }
+      } catch (err) {
+        showToast('Kopiering misslyckades');
+      }
+      
+      document.body.removeChild(tempInput);
+    }
+
+    function clearSessionHistory() {
+      try {
+        localStorage.removeItem('trackman_session_history');
+      } catch (e) {}
+      renderSessionHistory();
+      showToast('Passhistoriken har rensats');
+    }
+
+    function restoreSavedPassData() {
+      try {
+        const saved = localStorage.getItem('trackman_current_active_pass');
+        if (saved) {
+          const d = JSON.parse(saved);
+          currentPassData = d;
+          if (d.step0) {
+            if (d.step0.smash) document.getElementById('s1_smash').value = d.step0.smash;
+            if (d.step0.speed) document.getElementById('s1_clubspeed').value = d.step0.speed;
+            if (d.step0.strike) setStrikeQuality(d.step0.strike);
+          }
+          if (d.step1) {
+            if (d.step1.attack) document.getElementById('s2_attack').value = d.step1.attack;
+            if (d.step1.carry50) document.getElementById('s2_carry50').value = d.step1.carry50;
+            if (d.step1.carry56) document.getElementById('s2_carry56').value = d.step1.carry56;
+            if (d.step1.carry60) document.getElementById('s2_carry60').value = d.step1.carry60;
+          }
+          if (d.step2) {
+            if (d.step2.facePath) document.getElementById('s3_face_path').value = d.step2.facePath;
+            if (d.step2.driverAttack) document.getElementById('s3_driver_attack').value = d.step2.driverAttack;
+            if (d.step2.fairways) {
+              document.getElementById('s3_fairways_slider').value = d.step2.fairways;
+              document.getElementById('s3_fairway_label').textContent = `${d.step2.fairways} / 10 i spel`;
+            }
+            if (d.step2.driverCarry) document.getElementById('s3_driver_carry').value = d.step2.driverCarry;
+          }
+          if (d.step3) {
+            if (d.step3.focus) document.getElementById('s4_focus').value = d.step3.focus;
+            if (d.step3.notes) document.getElementById('s4_notes').value = d.step3.notes;
+          }
+          if (d.step4) {
+            if (d.step4.course) document.getElementById('s5_course').value = d.step4.course;
+            if (d.step4.score) document.getElementById('s5_score').value = d.step4.score;
+            if (d.step4.fir) document.getElementById('s5_fir').value = d.step4.fir;
+            if (d.step4.gir) document.getElementById('s5_gir').value = d.step4.gir;
+            if (d.step4.penalties) document.getElementById('s5_penalties').value = d.step4.penalties;
+          }
+        }
+      } catch (e) {}
+    }
+
+    // Initialization
+    window.addEventListener('DOMContentLoaded', () => {
+      initMatrix();
+      restoreSavedPassData();
+      updateStepUI();
+      renderSessionHistory();
+    });
+  </script>
+</body>
+</html>
